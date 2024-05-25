@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stopwatch</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</head>
+<body>
+<div>
+    <h1>Stopwatch</h1>
+    <div id="time">0</div>
+    <button onclick="sendStart()">Start</button>
+    <button onclick="sendStop()">Stop</button>
+    <button onclick="sendReset()">Reset</button>
+</div>
+
+<script>
+    var stompClient = null;
+
+    function connect() {
+        var socket = new SockJS('/stopwatch-websocket');
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, function (frame) {
+            console.log('Connected: ' + frame);
+            stompClient.subscribe('/topic/stopwatch', function (message) {
+                document.getElementById('time').innerText = message.body;
+            });
+        });
+    }
+
+    function sendStart() {
+        stompClient.send("/app/start", {}, {});
+    }
+
+    function sendStop() {
+        stompClient.send("/app/stop", {}, {});
+    }
+
+    function sendReset() {
+        stompClient.send("/app/reset", {}, {});
+    }
+
+    window.onload = connect;
+</script>
+</body>
+</html>
